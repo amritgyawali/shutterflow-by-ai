@@ -40,6 +40,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final com.shutterflow.core.studio.StudioInvitationRepository studioInvitationRepository;
 
     @PostMapping("/register-studio")
     public ResponseEntity<ApiResponse<AuthResponse>> registerStudio(
@@ -113,6 +114,66 @@ public class AuthController {
         userRepository.save(user);
 
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
+    }
+
+    @Data
+    public static class AcceptInviteRequest {
+        @jakarta.validation.constraints.NotBlank
+        private String token;
+        @jakarta.validation.constraints.NotBlank
+        private String password;
+    }
+
+    @PostMapping("/accept-invite")
+    public ResponseEntity<ApiResponse<AuthResponse>> acceptInvite(@Valid @RequestBody AcceptInviteRequest request) {
+        com.shutterflow.core.studio.StudioInvitation invitation = studioInvitationRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new AppException("Invalid or expired invitation token", HttpStatus.BAD_REQUEST));
+
+        if (invitation.isRedeemed()) {
+            throw new AppException("Invitation token has already been redeemed", HttpStatus.BAD_REQUEST);
+        }
+
+        if (java.time.LocalDateTime.now().isAfter(invitation.getExpiresAt())) {
+            throw new AppException("Invitation token has expired", HttpStatus.BAD_REQUEST);
+        }
+
+        // Check if user already exists
+        User user = userRepository.findByEmail(invitation.getEmail().toLowerCase()).orElse(null);
+        if (user != null) {
+            if (user.getStudioId() != null) {
+                throw new AppException("User is already linked to a studio space", HttpStatus.BAD_REQUEST);
+            }
+            user.setStudioId(invitation.getStudioId());
+            user.setRole(UserRole.valueOf(invitation.getRole()));
+            userRepository.save(user);
+        } else {
+            user = User.builder()
+                    .id(UUID.randomUUID().toString())
+                    .email(invitation.getEmail().toLowerCase())
+                    .passwordHash(passwordEncoder.encode(request.getPassword()))
+                    .role(UserRole.valueOf(invitation.getRole()))
+                    .studioId(invitation.getStudioId())
+                    .build();
+            userRepository.save(user);
+        }
+
+        invitation.setRedeemed(true);
+        studioInvitationRepository.save(invitation);
+
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getEmail(), user.getRole(), user.getStudioId()
+        );
+        String refreshToken = UUID.randomUUID().toString();
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .role(user.getRole())
+                .studioId(user.getStudioId())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(response, "Invitation accepted and joined studio team successfully"));
     }
 }
 

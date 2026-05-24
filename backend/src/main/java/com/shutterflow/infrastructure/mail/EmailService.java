@@ -97,4 +97,25 @@ public class EmailService {
         
         sendHtmlEmail(toEmail, subject, htmlContent);
     }
+
+    /**
+     * Dispatches a studio team invitation email.
+     */
+    @Async
+    public void sendInvitationEmail(String toEmail, String inviteLink) {
+        String subject = "You've been invited to join a ShutterFlow Studio!";
+        String htmlContent = """
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Join your Studio team on ShutterFlow</h2>
+                <p>You have been invited to join your studio's team spaces on ShutterFlow as a Photographer.</p>
+                <div style="margin: 30px 0;">
+                    <a href="%s" style="background-color: #10b981; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Accept & Join Team</a>
+                </div>
+                <p style="color: #666; font-size: 14px;">This invitation will expire in 48 hours.</p>
+                <p style="color: #666; font-size: 14px;">If you didn't expect this, you can safely ignore this email.</p>
+            </div>
+            """.formatted(inviteLink);
+
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
 }

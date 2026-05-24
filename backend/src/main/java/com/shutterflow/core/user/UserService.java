@@ -21,6 +21,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final com.shutterflow.core.studio.SubscriptionQuotaService subscriptionQuotaService;
 
     /**
      * Registers a new photographer. Supports both standalone registration 
@@ -42,6 +43,10 @@ public class UserService {
             } else {
                 throw new AppException("Invalid or expired invitation token", HttpStatus.BAD_REQUEST);
             }
+        }
+
+        if (studioId != null) {
+            subscriptionQuotaService.validatePhotographerQuota(studioId);
         }
 
         String userId = UUID.randomUUID().toString();

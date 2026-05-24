@@ -41,6 +41,21 @@ public class Studio {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "logo_s3_key")
+    private String logoS3Key;
+
+    @Column(name = "primary_color")
+    @Builder.Default
+    private String primaryColor = "#1f2937";
+
+    @Column(name = "secondary_color")
+    @Builder.Default
+    private String secondaryColor = "#10b981";
+
+    @Column(name = "custom_font")
+    @Builder.Default
+    private String customFont = "Outfit";
+
     @OneToOne(mappedBy = "studio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private StudioSettings settings;
 }

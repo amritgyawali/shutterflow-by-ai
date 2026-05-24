@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@org.hibernate.annotations.FilterDef(name = "tenantFilter", parameters = @org.hibernate.annotations.ParamDef(name = "studioId", type = String.class))
+@org.hibernate.annotations.Filter(name = "tenantFilter", condition = "studio_id = :studioId")
 public class User {
 
     @Id

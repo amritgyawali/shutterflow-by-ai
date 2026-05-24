@@ -39,6 +39,14 @@ public class StudioSettings {
     @Builder.Default
     private String secondaryColor = "#10b981";
 
+    @Column(name = "commission_split_percentage", nullable = false, precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal commissionSplitPercentage = new BigDecimal("70.00");
+
+    @Column(name = "commission_flat_fee", nullable = false, precision = 10, scale = 2)
+    @Builder.Default
+    private BigDecimal commissionFlatFee = new BigDecimal("0.00");
+
     @OneToOne(fetch = FetchType.LAZY)
     @PrimaryKeyJoinColumn
     private Studio studio;
