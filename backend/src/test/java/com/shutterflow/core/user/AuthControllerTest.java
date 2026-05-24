@@ -5,18 +5,30 @@ import com.shutterflow.core.studio.Studio;
 import com.shutterflow.core.studio.StudioRepository;
 import com.shutterflow.core.user.dto.RegisterStudioRequest;
 import com.shutterflow.core.user.dto.RegisterPhotographerRequest;
+import com.shutterflow.core.user.dto.MagicLinkRequest;
+import com.shutterflow.core.user.dto.MagicLoginRequest;
+import com.shutterflow.core.user.dto.ForgotPasswordRequest;
+import com.shutterflow.core.user.dto.ResetPasswordRequest;
+import com.shutterflow.infrastructure.mail.EmailService;
+import com.shutterflow.infrastructure.security.MagicTokenService;
+import com.shutterflow.infrastructure.security.PasswordResetTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +50,18 @@ class AuthControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @MockBean
+    private EmailService emailService;
+
+    @MockBean
+    private MagicTokenService magicTokenService;
+
+    @MockBean
+    private PasswordResetTokenService passwordResetTokenService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void cleanDatabase() {
@@ -162,5 +186,103 @@ class AuthControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message").value("Invalid or expired invitation token"));
+    }
+
+    @Test
+    void requestMagicLink_ShouldSucceed_WhenUserExists() throws Exception {
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .email("client@shutterflow.com")
+                .passwordHash("hash")
+                .role(UserRole.CLIENT)
+                .build();
+        userRepository.save(user);
+
+        when(magicTokenService.generateAndStoreMagicToken(anyString())).thenReturn("mock-magic-token");
+
+        MagicLinkRequest request = new MagicLinkRequest("client@shutterflow.com");
+
+        mockMvc.perform(post("/api/v1/auth/magic-request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Magic link sent successfully"));
+
+        verify(emailService).sendMagicLinkEmail(eq("client@shutterflow.com"), contains("mock-magic-token"));
+    }
+
+    @Test
+    void magicLogin_ShouldSucceed_WhenTokenIsValid() throws Exception {
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .email("client@shutterflow.com")
+                .passwordHash("hash")
+                .role(UserRole.CLIENT)
+                .build();
+        userRepository.save(user);
+
+        when(magicTokenService.validateAndConsumeToken("mock-magic-token")).thenReturn("client@shutterflow.com");
+
+        MagicLoginRequest request = new MagicLoginRequest("mock-magic-token");
+
+        mockMvc.perform(post("/api/v1/auth/magic-login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Logged in successfully"))
+                .andExpect(jsonPath("$.data.email").value("client@shutterflow.com"))
+                .andExpect(jsonPath("$.data.role").value("CLIENT"))
+                .andExpect(jsonPath("$.data.accessToken").exists());
+    }
+
+    @Test
+    void forgotPassword_ShouldSucceed_WhenUserExists() throws Exception {
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .email("user@shutterflow.com")
+                .passwordHash("hash")
+                .role(UserRole.STUDIO_OWNER)
+                .build();
+        userRepository.save(user);
+
+        when(passwordResetTokenService.generateAndStoreResetToken(anyString())).thenReturn("mock-reset-token");
+
+        ForgotPasswordRequest request = new ForgotPasswordRequest("user@shutterflow.com");
+
+        mockMvc.perform(post("/api/v1/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Password reset link sent successfully"));
+
+        verify(emailService).sendPasswordResetEmail(eq("user@shutterflow.com"), contains("mock-reset-token"));
+    }
+
+    @Test
+    void resetPassword_ShouldSucceed_WhenTokenIsValid() throws Exception {
+        User user = User.builder()
+                .id(UUID.randomUUID().toString())
+                .email("user@shutterflow.com")
+                .passwordHash("oldHash")
+                .role(UserRole.STUDIO_OWNER)
+                .build();
+        userRepository.save(user);
+
+        when(passwordResetTokenService.validateAndConsumeToken("mock-reset-token")).thenReturn("user@shutterflow.com");
+
+        ResetPasswordRequest request = new ResetPasswordRequest("mock-reset-token", "new_secure_password");
+
+        mockMvc.perform(post("/api/v1/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Password reset successfully"));
+
+        User updatedUser = userRepository.findByEmail("user@shutterflow.com").orElseThrow();
+        assertTrue(passwordEncoder.matches("new_secure_password", updatedUser.getPasswordHash()));
     }
 }

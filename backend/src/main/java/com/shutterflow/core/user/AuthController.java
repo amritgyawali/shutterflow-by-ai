@@ -13,6 +13,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shutterflow.core.user.dto.RegisterPhotographerRequest;
+import com.shutterflow.core.user.dto.MagicLinkRequest;
+import com.shutterflow.core.user.dto.MagicLoginRequest;
+import com.shutterflow.core.user.dto.ForgotPasswordRequest;
+import com.shutterflow.core.user.dto.ResetPasswordRequest;
+import com.shutterflow.infrastructure.mail.EmailService;
+import com.shutterflow.infrastructure.security.JwtTokenProvider;
+import com.shutterflow.infrastructure.security.MagicTokenService;
+import com.shutterflow.infrastructure.security.PasswordResetTokenService;
+import com.shutterflow.core.common.AppException;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -21,6 +34,12 @@ public class AuthController {
 
     private final StudioService studioService;
     private final UserService userService;
+    private final MagicTokenService magicTokenService;
+    private final PasswordResetTokenService passwordResetTokenService;
+    private final EmailService emailService;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register-studio")
     public ResponseEntity<ApiResponse<AuthResponse>> registerStudio(
@@ -34,6 +53,66 @@ public class AuthController {
             @Valid @RequestBody RegisterPhotographerRequest request) {
         AuthResponse response = userService.registerPhotographer(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Photographer registered successfully"));
+    }
+
+    @PostMapping("/magic-request")
+    public ResponseEntity<ApiResponse<Void>> requestMagicLink(@Valid @RequestBody MagicLinkRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+
+        String token = magicTokenService.generateAndStoreMagicToken(user.getEmail());
+        String magicLink = "http://localhost:4200/auth/magic-login?token=" + token; // Default local URL
+        emailService.sendMagicLinkEmail(user.getEmail(), magicLink);
+
+        return ResponseEntity.ok(ApiResponse.success(null, "Magic link sent successfully"));
+    }
+
+    @PostMapping("/magic-login")
+    public ResponseEntity<ApiResponse<AuthResponse>> magicLogin(@Valid @RequestBody MagicLoginRequest request) {
+        String email = magicTokenService.validateAndConsumeToken(request.getToken());
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getEmail(), user.getRole(), user.getStudioId()
+        );
+        String refreshToken = UUID.randomUUID().toString();
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .role(user.getRole())
+                .studioId(user.getStudioId())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(response, "Logged in successfully"));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+
+        String token = passwordResetTokenService.generateAndStoreResetToken(user.getEmail());
+        String resetLink = "http://localhost:4200/auth/reset-password?token=" + token;
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+
+        return ResponseEntity.ok(ApiResponse.success(null, "Password reset link sent successfully"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        String email = passwordResetTokenService.validateAndConsumeToken(request.getToken());
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException("User not found", HttpStatus.NOT_FOUND));
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
     }
 }
 

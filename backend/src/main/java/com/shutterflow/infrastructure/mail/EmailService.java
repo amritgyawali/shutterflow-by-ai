@@ -55,4 +55,46 @@ public class EmailService {
             throw new AppException("Failed to deliver outbound email notification", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Dispatches a magic link email to the user.
+     */
+    @Async
+    public void sendMagicLinkEmail(String toEmail, String magicLink) {
+        String subject = "Your ShutterFlow Magic Login Link";
+        String htmlContent = """
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Login to ShutterFlow</h2>
+                <p>Click the secure link below to log in instantly. No password required.</p>
+                <div style="margin: 30px 0;">
+                    <a href="%s" style="background-color: #000000; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Log in instantly</a>
+                </div>
+                <p style="color: #666; font-size: 14px;">This link will expire in 15 minutes and can only be used once.</p>
+                <p style="color: #666; font-size: 14px;">If you didn't request this link, you can safely ignore this email.</p>
+            </div>
+            """.formatted(magicLink);
+        
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
+
+    /**
+     * Dispatches a password reset email to the user.
+     */
+    @Async
+    public void sendPasswordResetEmail(String toEmail, String resetLink) {
+        String subject = "ShutterFlow Password Reset";
+        String htmlContent = """
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Reset your Password</h2>
+                <p>We received a request to reset your ShutterFlow password.</p>
+                <div style="margin: 30px 0;">
+                    <a href="%s" style="background-color: #000000; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
+                </div>
+                <p style="color: #666; font-size: 14px;">This link will expire in 15 minutes and can only be used once.</p>
+                <p style="color: #666; font-size: 14px;">If you didn't request a password reset, you can safely ignore this email.</p>
+            </div>
+            """.formatted(resetLink);
+        
+        sendHtmlEmail(toEmail, subject, htmlContent);
+    }
 }
