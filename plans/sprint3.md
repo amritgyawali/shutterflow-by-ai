@@ -105,3 +105,5 @@ graph TD
 - [ ] Invitation tokens expire after 48 hours and reject multi-use attempts.
 - [ ] Portfolios store bios and availabilities correctly in database schemas.
 - [ ] All integration tests pass successfully (`./gradlew test`).
+
+follow shutterflow_sprint_plan.html

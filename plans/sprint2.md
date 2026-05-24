@@ -116,3 +116,5 @@ sequenceDiagram
 - [ ] Magic links validate, issue active user sessions, and expire after one use.
 - [ ] Rate limits trigger HTTP 429 Too Many Requests once thresholds are breached.
 - [ ] All integration tests pass successfully (`./gradlew test`).
+
+follow shutterflow_sprint_plan.html

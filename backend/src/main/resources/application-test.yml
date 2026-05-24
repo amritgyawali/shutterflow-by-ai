@@ -29,3 +29,7 @@ aws:
 sendgrid:
   api-key: SG.mock_sendgrid_key_for_test_profiles
   from-email: no-reply@shutterflow.com
+
+bucket4j:
+  enabled: false
+

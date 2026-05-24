@@ -27,6 +27,7 @@ import java.util.Collections;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,7 +49,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitingFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

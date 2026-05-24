@@ -1,0 +1,141 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:16px 0;max-width:680px}
+.title{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.sub{font-size:13px;color:var(--color-text-secondary);margin-bottom:20px}
+.phase-label{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin:20px 0 8px;padding:4px 10px;border-radius:4px;display:inline-block}
+.ph1{background:var(--color-background-info);color:var(--color-text-info)}
+.ph2{background:var(--color-background-success);color:var(--color-text-success)}
+.ph3{background:var(--color-background-warning);color:var(--color-text-warning)}
+.ph4{background:var(--color-background-danger);color:var(--color-text-danger)}
+.sprint{border:1px solid var(--color-border-tertiary);border-radius:10px;margin-bottom:10px;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.sprint:hover{border-color:var(--color-border-primary)}
+.sprint-head{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--color-background-secondary)}
+.sprint-num{font-size:11px;font-weight:500;color:var(--color-text-secondary);min-width:60px}
+.sprint-name{font-size:14px;font-weight:500;color:var(--color-text-primary);flex:1}
+.sprint-weeks{font-size:11px;color:var(--color-text-tertiary);white-space:nowrap}
+.badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap}
+.b-back{background:var(--color-background-info);color:var(--color-text-info)}
+.b-front{background:var(--color-background-success);color:var(--color-text-success)}
+.b-both{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-infra{background:var(--color-background-danger);color:var(--color-text-danger)}
+.chevron{font-size:12px;color:var(--color-text-tertiary);transition:transform .2s}
+.sprint-body{display:none;padding:12px 16px;border-top:1px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.sprint-body.open{display:block}
+.chevron.open{transform:rotate(180deg)}
+.tasks{list-style:none;display:flex;flex-direction:column;gap:5px}
+.tasks li{font-size:13px;color:var(--color-text-secondary);display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.tasks li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--color-border-primary);margin-top:6px;flex-shrink:0}
+.goal{font-size:12px;color:var(--color-text-secondary);margin-top:10px;padding:8px 12px;border-radius:6px;border-left:3px solid var(--color-border-secondary);background:var(--color-background-secondary)}
+.goal strong{color:var(--color-text-primary)}
+.progress{height:4px;background:var(--color-border-tertiary);border-radius:2px;margin:16px 0 4px}
+.progress-bar{height:100%;border-radius:2px;background:var(--color-text-info)}
+.progress-label{font-size:11px;color:var(--color-text-tertiary);display:flex;justify-content:space-between}
+</style>
+<div class="wrap">
+<div class="title">ShutterFlow — complete sprint plan</div>
+<div class="sub">20 sprints · 40 weeks · production-ready SaaS</div>
+
+<div class="progress">
+  <div class="progress-bar" style="width:0%" id="prog-bar"></div>
+</div>
+<div class="progress-label"><span>Sprint progress</span><span id="prog-txt">0 / 20 sprints</span></div>
+
+<div id="sprints"></div>
+</div>
+
+<script>
+const phases=[
+  {label:"Phase 1 — Foundation",cls:"ph1",sprints:[
+    {n:1,name:"Project setup & architecture",weeks:"Week 1–2",type:"b-infra",tasks:["Create monorepo structure (backend + frontend + mobile)",
+"Set up Spring Boot 3.2 with modular package structure","Configure MySQL with full schema (all 20 tables)","Set up AWS S3 bucket for photo storage","Configure SendGrid for email","Set up Railway.app for backend hosting","Set up Vercel for frontend hosting","Configure GitHub Actions CI/CD pipeline","Set up dev/staging/production environments","Write base Docker configuration"],goal:"Goal: Infrastructure is ready. Every developer can clone and run locally in under 5 minutes."},
+    {n:2,name:"Auth system — all roles",weeks:"Week 3–4",type:"b-back",tasks:["Implement full User model with 5 roles (STUDIO_OWNER, PHOTOGRAPHER, SECOND_SHOOTER, CLIENT, ADMIN)","JWT auth with refresh tokens","Role-based access control (RBAC) on every endpoint","Studio registration flow (creates studio + owner account)","Photographer registration (standalone or invite-based)","Client portal token-based login (magic link, no password)","Password reset via email","Email verification on registration","Session management and logout","Security audit — rate limiting, brute force protection"],goal:"Goal: Any role can register, login, and access only their permitted routes."},
+    {n:3,name:"Studio & photographer models",weeks:"Week 5–6",type:"b-back",tasks:["Complete Studio model (name, logo, branding, plan, settings)","Studio plan management (STARTER, PRO, STUDIO)","Invite photographer to studio via email","Photographer accepts invite and joins studio","Studio settings API (timezone, currency, tax, bank details)","Photographer profile API (bio, portfolio, availability hours)","Multi-photographer listing within studio","Studio-wide stats aggregation endpoint","Commission and revenue split configuration","Studio subscription tracking and plan limits"],goal:"Goal: A studio can be created, configured, and populated with multiple photographers."},
+    {n:4,name:"Client CRM",weeks:"Week 7–8",type:"b-back",tasks:["Full Client model (separate from User — clients don't need accounts)","Create, read, update, delete clients","Multiple contacts per client (partner names for weddings)","Client tags (VIP, Referral, Corporate)","Lead source tracking (Instagram, Google, Referral, Wedding Fair)","Client notes and internal memos","Total spend tracking (auto-calculated from invoices)","Client portal access management (generate + revoke tokens)","Client import via CSV","Search and filter clients API"],goal:"Goal: Full CRM — every client tracked, tagged, and searchable."}
+  ]},
+  {label:"Phase 2 — Core Business Features",cls:"ph2",sprints:[
+    {n:5,name:"Packages & pricing",weeks:"Week 9–10",type:"b-back",tasks:["Package model (name, description, base price, hours, deliverables)","Package add-ons (extra hours $150/hr, prints, albums, USB)","Package visibility (public vs private)","Multiple packages per photographer and per studio","Custom package builder (one-off pricing)","Price list PDF generator","Tax configuration per studio (GST for Australia — 10%)","Multi-currency support (AUD, USD, GBP, NPR, EUR)","Package duplication","Seasonal pricing configuration"],goal:"Goal: Photographers can create packages that auto-calculate pricing when booking."},
+    {n:6,name:"Booking system — complete",weeks:"Week 11–12",type:"b-back",tasks:["Full Booking model with complete lifecycle status","Booking creation wizard API (client + event + payment in one call)","Second shooter assignment","Package selection linked to booking","Availability conflict detection (double-booking prevention)","Booking notes (client-visible vs internal)","Event location with coordinates","Travel fee and overtime fee auto-calculation","Booking duplication for recurring clients","Complete booking lifecycle APIs (INQUIRY→ARCHIVED)","Booking timeline/audit log (every status change recorded)"],goal:"Goal: Complete booking system that tracks every event from first enquiry to archived."},
+    {n:7,name:"Calendar & scheduling",weeks:"Week 13–14",type:"b-both",tasks:["Calendar model with event types (BOOKING, BLOCK, PERSONAL)","Monthly/weekly/daily calendar API","Google Calendar 2-way sync (OAuth)","Availability blocking API","Multi-photographer calendar for studio","Public availability page (read-only, no login needed)","Online scheduling widget (embed on website)","Travel time buffer between bookings","Booking conflict detection on calendar","Calendar iCal export","Angular calendar UI component (full-calendar library)"],goal:"Goal: Photographers manage time, clients check availability, studios see all photographers."},
+    {n:8,name:"Contracts & e-signature",weeks:"Week 15–16",type:"b-both",tasks:["Contract template model (studio-specific library)","Drag-and-drop contract builder API","Smart fields (auto-fill: client name, event date, amount, location)","Multiple templates per event type","Send contract to client via email","Client e-signature (canvas-based, legally binding in Australia)","Photographer countersignature","Signature timestamp, IP capture, geolocation","Contract PDF generation (signed copy)","Contract status tracking (DRAFT, SENT, SIGNED, COUNTERSIGNED)","Model release form template","Angular contract builder UI"],goal:"Goal: Fully legal digital contracts with e-signature — zero paper needed."}
+  ]},
+  {label:"Phase 3 — Money & Delivery",cls:"ph3",sprints:[
+    {n:9,name:"Invoicing system",weeks:"Week 17–18",type:"b-both",tasks:["Complete Invoice model with all financial fields","Auto-generate invoice from booking","Multiple invoice designs/templates","Line items with quantities and unit prices","Discount codes (percentage and fixed amount)","GST/tax calculation (10% for Australia)","Deposit invoice (partial) + balance invoice","Invoice series numbering (INV-2025-001)","Payment terms and due dates","Overdue detection and status (DRAFT→SENT→PARTIAL→PAID→OVERDUE)","Professional invoice PDF with studio branding","Invoice email delivery with PDF attached","Angular invoice management UI"],goal:"Goal: Professional invoicing that looks better than any competitor's."},
+    {n:10,name:"Stripe payment integration",weeks:"Week 19–20",type:"b-both",tasks:["Stripe account setup and API integration","Payment intent creation","Credit/debit card payments","Payment plans (split into 2–4 instalments)","Automated payment reminders (3 days before due)","Payment receipt emails (auto)","Partial payment recording","Refund processing","Stripe webhook handling (payment confirmed, failed, refunded)","Payment history per client","Revenue reconciliation dashboard","Client-side payment form (Stripe Elements in Angular)","Test with Australian Stripe account (AUD currency)"],goal:"Goal: Clients pay online. Money lands in photographer's bank. Zero manual chasing."},
+    {n:11,name:"Gallery & photo delivery",weeks:"Week 21–22",type:"b-both",tasks:["Gallery model (title, cover, password, expiry, watermark settings)","Bulk photo upload to AWS S3","Automatic thumbnail generation (Sharp library)","Gallery sections/albums within one gallery","Watermark overlay system (studio logo or text)","Individual photo download (web/print/original quality)","Full gallery zip download","Download tracking (who, what, when)","Download limits and expiry date","Gallery password protection","Gallery sharing link generation","Gallery delivery notification to client","Angular gallery management UI for photographers"],goal:"Goal: Photographers upload once. Clients receive a beautiful, secure, branded gallery."},
+    {n:12,name:"Questionnaires & forms",weeks:"Week 23–24",type:"b-both",tasks:["Form builder model (question types: text, choice, date, file, signature)","Drag-and-drop form builder API","Pre-built questionnaire templates (Wedding, Portrait, Newborn, Commercial)","Conditional logic (show question B only if question A = yes)","Send questionnaire to client via email","Questionnaire completion tracking","Automated trigger (send automatically 2 weeks before event)","Responses stored in booking record","File upload in questionnaires","Post-shoot feedback form template","Angular form builder UI"],goal:"Goal: Photographers know everything about the event before they arrive."}
+  ]},
+  {label:"Phase 4 — Client Portal",cls:"ph4",sprints:[
+    {n:13,name:"Client portal — core",weeks:"Week 25–26",type:"b-both",tasks:["Client portal login (magic link — email token, no password needed)","Branded portal URL (client.shutterflow.com/studioslug)","Client dashboard (upcoming events, recent gallery, outstanding invoices)","Event countdown timer (days until wedding)","All bookings list view for client","Booking detail view (full event info)","Mobile-first responsive design","Client can update their own contact details","Notification bell (new gallery, invoice due, message)","Share portal link with family members"],goal:"Goal: Clients feel like they have a premium, professional experience — not just an email thread."},
+    {n:14,name:"Client portal — gallery & payments",weeks:"Week 27–28",type:"b-both",tasks:["Beautiful gallery viewer (masonry grid layout)","Full-screen photo view with zoom","Client can mark favorite photos","Client can comment on photos","Photo download (individual and zip)","Social sharing from gallery","Invoice view in client portal","Pay invoice button (Stripe embedded)","Payment plan view (instalments)","Receipt download","Contract view and e-signature in portal","Questionnaire completion in portal"],goal:"Goal: Everything a client needs — in one beautiful portal. Zero email back-and-forth."},
+    {n:15,name:"Messaging & notifications",weeks:"Week 29–30",type:"b-both",tasks:["In-app messaging (threaded conversations per booking)","Client ↔ photographer messaging in portal","File sharing in messages","Read receipts","Message notification emails (if unread after 1 hour)","Push notification system (Firebase)","In-app notification center","SMS notifications via Twilio (optional addon)","Email notification templates (beautiful HTML)","Photographer gets notified: new message, payment received, contract signed","Client gets notified: gallery ready, invoice due, message received","Notification preferences (choose what to receive)"],goal:"Goal: Never miss a message. Never chase a client. Everything is automatic."},
+    {n:16,name:"Reviews & reputation",weeks:"Week 31–32",type:"b-both",tasks:["Auto-request review 3 days after booking marked COMPLETED","Star rating (1–5) + written review","Review approval before publishing","Public reviews on photographer profile page","Photographer can respond to reviews","Google review integration (redirect prompt after ShutterFlow review)","Review widget embeddable on website","Review analytics (average rating, rating breakdown, trends)","Featured review selection","Review reminder email if no response after 7 days"],goal:"Goal: Every completed job builds reputation automatically. Google reviews without asking manually."}
+  ]},
+  {label:"Phase 5 — Studio & Automation",cls:"ph1",sprints:[
+    {n:17,name:"Studio dashboard & team management",weeks:"Week 33–34",type:"b-both",tasks:["Studio owner dashboard (all photographers, all bookings, all revenue)","Team performance view (bookings per photographer, revenue, ratings)","Commission tracking per photographer","Revenue split configuration (studio % vs photographer %)","Assign bookings to photographers","Studio-wide calendar (see all photographers)","Team availability view","Studio announcements (notify all photographers)","Consolidated revenue reports (monthly, annual, by photographer)","Tax summary report (BAS preparation for Australia — GST)"],goal:"Goal: Studio owners run their entire business from one screen."},
+    {n:18,name:"Workflow automation",weeks:"Week 35–36",type:"b-both",tasks:["Visual workflow builder (trigger → condition → action)","Trigger types: booking created, contract signed, payment received, date-based","Action types: send email, send questionnaire, create invoice, create task","Pre-built workflow templates (Wedding workflow, Portrait workflow, Lead workflow)","Email template library (20+ professional templates)","Delay-based triggers (send email 3 days after booking)","Condition-based triggers (if deposit not paid after 7 days → send reminder)","Workflow on/off toggle","Automation history log (what ran, when, for whom)","Email marketing: broadcast emails to client list","Angular workflow builder UI"],goal:"Goal: The business runs itself. Photographers focus on shooting, not admin."}
+  ]},
+  {label:"Phase 6 — Public & Mobile",cls:"ph2",sprints:[
+    {n:19,name:"Public website builder & landing page",weeks:"Week 37–38",type:"b-both",tasks:["Photographer public profile page (portfolio, packages, reviews, contact)","Online booking widget (embeddable on any website)","Availability checker on public page","Package display on public page","Contact/enquiry form → auto-creates lead in CRM","SEO meta tags per photographer page","Custom domain support (connect yourname.com to ShutterFlow)","ShutterFlow landing page (marketing website)","Pricing page (3 plans clearly explained)","ShutterFlow blog (SEO content for photographer keywords)","Demo request flow","Analytics on public page (views, enquiries, conversion rate)"],goal:"Goal: Photographers don't need a separate website. ShutterFlow IS their website."},
+    {n:20,name:"Polish, performance & production launch",weeks:"Week 39–40",type:"b-infra",tasks:["Mobile app (React Native — iOS + Android) — core features only","Full mobile responsive audit on all pages","Performance optimization (lazy loading, image compression, API caching)","Security audit (penetration testing, OWASP checklist)","Error monitoring setup (Sentry)","Production database migration and backup system","Custom domain setup (shutterflow.com.au)","SSL certificate (Let's Encrypt)","Load testing (1000 concurrent users)","Beta launch email to 50 Australian photographers","Onboarding flow (guided tour for new users)","Help documentation and video tutorials","Launch on ProductHunt","First 100 paying customers campaign"],goal:"Goal: ShutterFlow is live. Real photographers are paying. The empire begins."}
+  ]}
+];
+
+function toggle(idx){
+  const body=document.getElementById('body-'+idx);
+  const chev=document.getElementById('chev-'+idx);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+const container=document.getElementById('sprints');
+const typeLbl={
+  'b-back':'Backend','b-front':'Frontend','b-both':'Full stack','b-infra':'Infrastructure'
+};
+let html='';
+phases.forEach(ph=>{
+  html+=`<div class="phase-label ${ph.cls}">${ph.label}</div>`;
+  ph.sprints.forEach(s=>{
+    html+=`<div class="sprint" onclick="toggle(${s.n})">
+      <div class="sprint-head">
+        <span class="sprint-num">Sprint ${s.n}</span>
+        <span class="sprint-name">${s.name}</span>
+        <span class="badge ${s.type}">${typeLbl[s.type]}</span>
+        <span class="sprint-weeks">${s.weeks}</span>
+        <span class="chevron" id="chev-${s.n}">▼</span>
+      </div>
+      <div class="sprint-body" id="body-${s.n}">
+        <ul class="tasks">
+          ${s.tasks.map(t=>`<li>${t}</li>`).join('')}
+        </ul>
+        <div class="goal"><strong>Sprint goal:</strong> ${s.goal}</div>
+      </div>
+    </div>`;
+  });
+});
+container.innerHTML=html;
+
+let done=0;
+const bar=document.getElementById('prog-bar');
+const txt=document.getElementById('prog-txt');
+
+document.querySelectorAll('.sprint-head').forEach(h=>{
+  h.addEventListener('click',function(e){
+    const sn=this.parentElement.querySelector('.sprint-num').textContent.replace('Sprint ','');
+    const body=document.getElementById('body-'+sn);
+    if(body.classList.contains('open')){
+      done=Math.min(20,done+0);
+    }
+  });
+});
+
+function updateProgress(){
+  const open=document.querySelectorAll('.sprint-body.open').length;
+  const pct=Math.round((open/20)*100);
+  bar.style.width=pct+'%';
+  txt.textContent=open+' / 20 sprints viewed';
+}
+document.getElementById('sprints').addEventListener('click',()=>setTimeout(updateProgress,50));
+</script>
