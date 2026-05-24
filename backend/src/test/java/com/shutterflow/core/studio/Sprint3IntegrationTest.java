@@ -51,6 +51,9 @@ class Sprint3IntegrationTest {
     @Autowired
     private PhotographerProfileRepository photographerProfileRepository;
 
+    @org.springframework.boot.test.mock.mockito.MockBean
+    private com.shutterflow.infrastructure.mail.EmailService emailService;
+
     private String studioIdA;
     private String studioIdB;
     private String ownerTokenA;
