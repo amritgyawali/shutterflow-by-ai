@@ -1,0 +1,105 @@
+<!-- app.html - ShutterFlow Premium Dashboard & Landing Page -->
+<div class="landing-container animate-fade-in" style="min-height: 100vh; position: relative; overflow: hidden; padding-bottom: 80px;">
+  
+  <!-- Subtle Glowing background shapes for depth -->
+  <div style="position: absolute; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(0,0,0,0) 70%); top: -200px; right: -100px; z-index: -1;"></div>
+  <div style="position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, rgba(0,0,0,0) 70%); bottom: -100px; left: -100px; z-index: -1;"></div>
+
+  <!-- Header Navigation -->
+  <header style="max-width: 1200px; margin: 24px auto; padding: 0 24px;">
+    <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; border-radius: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em;">
+          Shutter<span class="text-gradient">Flow</span>
+        </span>
+      </div>
+      <nav style="display: flex; gap: 32px; align-items: center;">
+        <a href="#features" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: var(--transition-smooth);" onmouseover="this.style.color='#f3f4f6'" onmouseout="this.style.color='var(--text-secondary)'">Features</a>
+        <a href="#pricing" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: var(--transition-smooth);" onmouseover="this.style.color='#f3f4f6'" onmouseout="this.style.color='var(--text-secondary)'">Pricing</a>
+        <a href="#about" style="color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: var(--transition-smooth);" onmouseover="this.style.color='#f3f4f6'" onmouseout="this.style.color='var(--text-secondary)'">Integrations</a>
+        <button class="btn-secondary" style="padding: 8px 20px; font-size: 0.9rem;">Client Portal</button>
+        <button class="btn-primary" style="padding: 8px 20px; font-size: 0.9rem; margin-left: 8px;">Studio Login</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main style="max-width: 1000px; margin: 80px auto 40px; text-align: center; padding: 0 24px;">
+    <div class="animate-slide-up">
+      <div class="glass-card" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 30px; margin-bottom: 24px; font-size: 0.85rem; font-weight: 600; border-color: rgba(16, 185, 129, 0.2);">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: var(--color-success); animation: pulse 2s infinite;"></span>
+        <span>Version 1.0 Live Setup Complete</span>
+      </div>
+      
+      <h1 style="font-size: 4rem; line-height: 1.1; margin-bottom: 24px; font-weight: 800;">
+        Flowing Operations.<br>
+        <span class="text-gradient">Flawless Photo Delivery.</span>
+      </h1>
+      
+      <p style="color: var(--text-secondary); font-size: 1.25rem; max-width: 600px; margin: 0 auto 40px; line-height: 1.6; font-weight: 400;">
+        The ultimate enterprise CRM, scheduling, invoicing, e-contracts, and client gallery delivery SaaS built exclusively for photographers.
+      </p>
+
+      <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 80px;">
+        <button class="btn-primary" style="padding: 16px 36px; font-size: 1.05rem;">
+          Get Started For Free
+        </button>
+        <button class="btn-secondary" style="padding: 16px 36px; font-size: 1.05rem;">
+          Request Live Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- Core Features Grid -->
+    <div id="features" style="text-align: left; margin-top: 60px;">
+      <h2 style="font-size: 2.2rem; margin-bottom: 12px; text-align: center;">Everything You Need to Run Your Empire</h2>
+      <p style="color: var(--text-secondary); text-align: center; max-width: 500px; margin: 0 auto 48px; font-size: 1rem; line-height: 1.5;">
+        Ditch the loose spreadsheets. Handle everything from the initial booking enquiry to the final high-res delivery.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1-fraction)); gap: 24px;">
+        <!-- Feature 1 -->
+        <div class="glass-card">
+          <div style="background: rgba(16, 185, 129, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <svg style="width: 24px; height: 24px; color: var(--color-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Studio CRM & Leads</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+            Track wedding details, partner names, custom tags, and lead ROI from Instagram, Google, or corporate referrals effortlessly.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="glass-card">
+          <div style="background: rgba(59, 130, 246, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <svg style="width: 24px; height: 24px; color: var(--color-secondary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; margin-bottom: 8px;">Dynamic Booking Wizard</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+            Double-booking protection check systems, automated travel fee calculation, second-shooter scheduling, and calendar syncs.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="glass-card">
+          <div style="background: rgba(139, 92, 246, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <svg style="width: 24px; height: 24px; color: var(--color-accent);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <h3 style="font-size: 1.25rem; margin-bottom: 8px;">E-Contracts & Invoices</h3>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+            Legally binding contract signature captures, automated deposit calculations, dynamic GST/tax inclusion, and direct billing sheets.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Keyframe Animation Hack -->
+<style>
+  @keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
+</style>

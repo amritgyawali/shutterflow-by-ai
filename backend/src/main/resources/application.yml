@@ -1,0 +1,10 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: shutterflow-backend
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1

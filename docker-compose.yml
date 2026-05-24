@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Relational Database: MySQL 8.0
+  mysql:
+    image: mysql:8.0
+    container_name: shutterflow-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_shutterflow_pass
+      MYSQL_DATABASE: shutterflow_db
+      MYSQL_USER: shutterflow_admin
+      MYSQL_PASSWORD: shutterflow_admin_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_shutterflow_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Caching and Rate-Limiting: Redis Stack (Includes RedisInsight visual GUI)
+  redis:
+    image: redis/redis-stack:latest
+    container_name: shutterflow-redis
+    restart: always
+    ports:
+      - "6379:6379"     # Redis Server
+      - "8001:8001"     # RedisInsight GUI Web Client
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Cloud Simulation: LocalStack (Simulating AWS S3 and SNS/SQS locally)
+  localstack:
+    image: localstack/localstack:latest
+    container_name: shutterflow-localstack
+    ports:
+      - "4566:4566"     # LocalStack Edge Port
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql-data:
+  redis-data:
+  localstack-data:

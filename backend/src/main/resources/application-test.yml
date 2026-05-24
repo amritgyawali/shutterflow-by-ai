@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:shutterflow_test_db;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      repositories:
+        enabled: false
+
+aws:
+  s3:
+    bucket-name: shutterflow-photos-test
+    endpoint: http://localhost:4566
+    region: us-east-1
+    access-key: mock-key
+    secret-key: mock-secret
+
+sendgrid:
+  api-key: SG.mock_sendgrid_key_for_test_profiles
+  from-email: no-reply@shutterflow.com
