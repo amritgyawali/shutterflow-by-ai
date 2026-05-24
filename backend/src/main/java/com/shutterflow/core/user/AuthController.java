@@ -116,7 +116,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(null, "Password reset successfully"));
     }
 
-    @Data
+    @lombok.Data
     public static class AcceptInviteRequest {
         @jakarta.validation.constraints.NotBlank
         private String token;
