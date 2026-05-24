@@ -45,6 +45,9 @@ class Sprint4IntegrationTest {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private jakarta.persistence.EntityManager entityManager;
+
     private String studioId;
     private String otherStudioId;
     private String token;
@@ -120,6 +123,9 @@ class Sprint4IntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.name").value("Jane Doe"))
                 .andExpect(jsonPath("$.data.relation").value("Bride"));
+
+        // Clear Hibernate/JPA context cache to reload fresh records with child collections
+        entityManager.clear();
 
         // Fetch client and verify contacts array populated
         mockMvc.perform(get("/api/v1/studios/" + studioId + "/clients/" + client.getId())
