@@ -250,6 +250,9 @@ public class ClientController {
                 .relation(request.getRelation())
                 .build();
 
+        client.getContacts().add(contact);
+        clientRepository.save(client);
+
         ClientContact saved = clientContactRepository.save(contact);
         ContactResponse response = ContactResponse.builder()
                 .id(saved.getId())
