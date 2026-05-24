@@ -48,6 +48,12 @@ public class Client {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "portal_token", length = 36, unique = true)
+    private String portalToken;
+
+    @Column(length = 255)
+    private String tags;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
