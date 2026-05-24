@@ -3,13 +3,15 @@ package com.shutterflow.infrastructure.security;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -18,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @Component
-public class RateLimitingFilter implements Filter {
+public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final CacheManager cacheManager;
     private final ConcurrentMap<String, Bucket> ipBuckets = new ConcurrentHashMap<>();
@@ -31,21 +33,18 @@ public class RateLimitingFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
 
         if (!enabled) {
-            chain.doFilter(request, response);
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String path = httpRequest.getRequestURI();
+        String path = request.getRequestURI();
         // Rate limit only auth pathways
         if (path.contains("/api/v1/auth/")) {
-            String ip = getClientIP(httpRequest);
+            String ip = getClientIP(request);
             Cache cache = cacheManager.getCache("rate-limit-cache");
 
             if (cache != null) {
@@ -56,7 +55,7 @@ public class RateLimitingFilter implements Filter {
                     if (System.currentTimeMillis() < blockExpiry) {
                         log.warn("Access block active: IP {} blocked. Remaining time: {}s", 
                                 ip, (blockExpiry - System.currentTimeMillis()) / 1000);
-                        sendTooManyRequestsError(httpResponse, "IP is temporarily blocked due to excessive authentication attempts. Try again in 30 minutes.");
+                        sendTooManyRequestsError(response, "IP is temporarily blocked due to excessive authentication attempts. Try again in 30 minutes.");
                         return;
                     } else {
                         // Expiry passed, evict from block cache
@@ -73,13 +72,13 @@ public class RateLimitingFilter implements Filter {
                     cache.put(blockKey, expiryTime);
                     log.error("SECURITY AUDIT VIOLATION: IP {} exceeded login/auth rate limits. Blocking for 30 minutes.", ip);
                     
-                    sendTooManyRequestsError(httpResponse, "Too many requests. You have been blocked for 30 minutes.");
+                    sendTooManyRequestsError(response, "Too many requests. You have been blocked for 30 minutes.");
                     return;
                 }
             }
         }
 
-        chain.doFilter(request, response);
+        filterChain.doFilter(request, response);
     }
 
     private Bucket createNewBucket(String ip) {

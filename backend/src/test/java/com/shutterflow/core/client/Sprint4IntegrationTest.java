@@ -125,6 +125,7 @@ class Sprint4IntegrationTest {
                 .andExpect(jsonPath("$.data.relation").value("Bride"));
 
         // Clear Hibernate/JPA context cache to reload fresh records with child collections
+        entityManager.flush();
         entityManager.clear();
 
         // Fetch client and verify contacts array populated

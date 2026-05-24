@@ -155,6 +155,15 @@ class AuthControllerTest {
 
     @Test
     void registerPhotographer_ShouldSucceed_WhenInvitedAndValid() throws Exception {
+        // Save invited studio in database to satisfy quota service lookup
+        Studio invitedStudio = Studio.builder()
+                .id("mock-studio-uuid")
+                .name("Mock Studio Space")
+                .subdomain("mock-studio")
+                .planTier(com.shutterflow.core.studio.PlanTier.PRO)
+                .build();
+        studioRepository.save(invitedStudio);
+
         RegisterPhotographerRequest request = RegisterPhotographerRequest.builder()
                 .email("team_member@shutterflow.com")
                 .password("team_member_pass_123")
