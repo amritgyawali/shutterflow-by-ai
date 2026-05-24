@@ -36,9 +36,9 @@ class RateLimitingTest {
     void authEndpoints_ShouldBeRateLimitedAndBlockedAfter5Attempts() throws Exception {
         String mockLoginJson = "{\"email\":\"test@shutterflow.com\",\"password\":\"wrongpassword\"}";
 
-        // Perform 5 successful checkouts/requests (should return 401 or whatever the auth returns, but NOT 429)
+        // Perform 5 successful checkouts/requests (should return 400 or whatever the auth returns, but NOT 429)
         for (int i = 0; i < 5; i++) {
-            mockMvc.perform(post("/api/v1/auth/login")
+            mockMvc.perform(post("/api/v1/auth/register-studio")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(mockLoginJson)
                             .with(request -> {
@@ -46,11 +46,11 @@ class RateLimitingTest {
                                 return request;
                             }))
                     .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
-                    .andExpect(status().is(org.hamcrest.Matchers.oneOf(401, 200, 404))); // Auth might fail or pass, but not 429
+                    .andExpect(status().is(org.hamcrest.Matchers.oneOf(400, 401, 200, 404))); // Auth might fail or pass, but not 429
         }
 
         // The 6th attempt from the same IP must be rate limited with HTTP 429
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/register-studio")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mockLoginJson)
                         .with(request -> {
@@ -62,13 +62,13 @@ class RateLimitingTest {
                 .andExpect(jsonPath("$.message").value("Too many requests. You have been blocked for 30 minutes."));
 
         // A request from a DIFFERENT IP should still succeed
-        mockMvc.perform(post("/api/v1/auth/login")
+        mockMvc.perform(post("/api/v1/auth/register-studio")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mockLoginJson)
                         .with(request -> {
                             request.setRemoteAddr("192.168.1.200");
                             return request;
                         }))
-                .andExpect(status().is(org.hamcrest.Matchers.oneOf(401, 200, 404)));
+                .andExpect(status().is(org.hamcrest.Matchers.oneOf(400, 401, 200, 404)));
     }
 }

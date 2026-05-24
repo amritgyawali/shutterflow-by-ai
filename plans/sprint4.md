@@ -103,3 +103,5 @@ graph LR
 - [ ] CSV bulk importer parses uploads in parallel, rejecting bad rows gracefully.
 - [ ] JPA Specifications compile dynamic SQL search structures successfully.
 - [ ] All integration tests pass successfully (`./gradlew test`).
+
+follow shutterflow_sprint_plan.html
