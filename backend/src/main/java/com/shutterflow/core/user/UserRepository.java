@@ -28,10 +28,10 @@ public interface UserRepository extends JpaRepository<User, String> {
     List<User> findByStudioIdAndEnabledTrue(String studioId);
 
     @Modifying
-    @Query("UPDATE User u SET u.failedLoginAttempts = :attempts, u.accountNonLocked = :locked, u.lockExpiresAt = :lockExpires WHERE u.id = :userId")
+    @Query("UPDATE User u SET u.failedLoginAttempts = :attempts, u.accountNonLocked = :accountNonLocked, u.lockExpiresAt = :lockExpires WHERE u.id = :userId")
     void updateLoginAttempts(@Param("userId") String userId,
                             @Param("attempts") int attempts,
-                            @Param("locked") boolean locked,
+                            @Param("accountNonLocked") boolean accountNonLocked,
                             @Param("lockExpires") LocalDateTime lockExpires);
 
     @Modifying

@@ -11,6 +11,7 @@ ALTER TABLE users
     ADD COLUMN lock_expires_at TIMESTAMP NULL AFTER failed_login_attempts,
     ADD COLUMN last_login_at TIMESTAMP NULL AFTER lock_expires_at;
 
--- Index for efficient auth lookups
+-- Indexes for efficient auth lookups
 CREATE INDEX idx_user_studio_role ON users (studio_id, role);
 CREATE INDEX idx_user_enabled ON users (enabled);
+CREATE INDEX idx_user_account_locked ON users (account_non_locked, lock_expires_at);

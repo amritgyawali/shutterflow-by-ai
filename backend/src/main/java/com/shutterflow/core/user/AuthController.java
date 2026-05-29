@@ -58,6 +58,9 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success(response, "Photographer registered successfully"));
     }
 
+    private static final int MAX_FAILED_LOGIN_ATTEMPTS = 5;
+    private static final int LOCK_DURATION_MINUTES = 30;
+
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
@@ -82,9 +85,9 @@ public class AuthController {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             int attempts = user.getFailedLoginAttempts() + 1;
             user.setFailedLoginAttempts(attempts);
-            if (attempts >= 5) {
+            if (attempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
                 user.setAccountNonLocked(false);
-                user.setLockExpiresAt(LocalDateTime.now().plusMinutes(30));
+                user.setLockExpiresAt(LocalDateTime.now().plusMinutes(LOCK_DURATION_MINUTES));
             }
             userRepository.save(user);
             throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);
