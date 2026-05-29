@@ -46,3 +46,7 @@ aws:
 sendgrid:
   api-key: SG.mock_sendgrid_api_key_for_local_testing_purposes_only
   from-email: no-reply@shutterflow.com
+
+app:
+  cors:
+    allowed-origins: http://localhost:4200,http://localhost:3000

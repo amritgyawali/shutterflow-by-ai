@@ -11,12 +11,17 @@ Thumbs.db
 
 # Maven / Java Build (Backend)
 backend/target/
+backend/build/
+backend/.gradle/
 backend/.mvn/wrapper/
 backend/.metadata/
 backend/bin/
 backend/dependency-reduced-pom.xml
 backend/*.log
 backend/out/
+
+# Gradle Wrapper Cache
+.gradle/
 
 # Node / Angular / React Native (Frontend & Mobile)
 node_modules/
@@ -43,3 +48,6 @@ pnpm-debug.log*
 # Docker
 docker/data/
 mysql-data/
+
+# AWS Credentials
+aws-credentials/
