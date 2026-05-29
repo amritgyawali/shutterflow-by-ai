@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/studios/*/branding").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/studios/*/reviews/photographer/*/public").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
