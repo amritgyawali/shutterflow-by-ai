@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shutterflow.core.user.dto.LoginRequest;
 import com.shutterflow.core.user.dto.RegisterPhotographerRequest;
 import com.shutterflow.core.user.dto.MagicLinkRequest;
 import com.shutterflow.core.user.dto.MagicLoginRequest;
@@ -25,6 +26,7 @@ import com.shutterflow.core.common.AppException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -54,6 +56,59 @@ public class AuthController {
             @Valid @RequestBody RegisterPhotographerRequest request) {
         AuthResponse response = userService.registerPhotographer(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Photographer registered successfully"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED));
+
+        if (!user.isEnabled()) {
+            throw new AppException("Account is disabled", HttpStatus.FORBIDDEN);
+        }
+
+        if (!user.isAccountNonLocked()) {
+            if (user.getLockExpiresAt() != null && LocalDateTime.now().isAfter(user.getLockExpiresAt())) {
+                // Lock has expired, unlock the account
+                user.setAccountNonLocked(true);
+                user.setFailedLoginAttempts(0);
+                user.setLockExpiresAt(null);
+                userRepository.save(user);
+            } else {
+                throw new AppException("Account is locked due to too many failed login attempts. Try again later.", HttpStatus.FORBIDDEN);
+            }
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            int attempts = user.getFailedLoginAttempts() + 1;
+            user.setFailedLoginAttempts(attempts);
+            if (attempts >= 5) {
+                user.setAccountNonLocked(false);
+                user.setLockExpiresAt(LocalDateTime.now().plusMinutes(30));
+            }
+            userRepository.save(user);
+            throw new AppException("Invalid email or password", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Successful login - reset failed attempts and record login time
+        user.setFailedLoginAttempts(0);
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String accessToken = jwtTokenProvider.generateAccessToken(
+                user.getEmail(), user.getRole(), user.getStudioId()
+        );
+        String refreshToken = UUID.randomUUID().toString();
+
+        AuthResponse response = AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .email(user.getEmail())
+                .role(user.getRole())
+                .studioId(user.getStudioId())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(response, "Login successful"));
     }
 
     @PostMapping("/magic-request")
