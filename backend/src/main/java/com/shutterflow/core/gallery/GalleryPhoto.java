@@ -1,5 +1,6 @@
 package com.shutterflow.core.gallery;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +22,13 @@ public class GalleryPhoto {
     @Column(length = 36)
     private String id;
 
-    @Column(name = "gallery_id", nullable = false, length = 36)
+    @Column(name = "gallery_id", nullable = false, length = 36, insertable = false, updatable = false)
     private String galleryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gallery_id")
+    @JsonIgnore
+    private Gallery gallery;
 
     @Column(name = "original_s3_key", nullable = false, length = 500)
     private String originalS3Key;
