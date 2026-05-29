@@ -66,7 +66,7 @@ public class PaymentService {
 
         // Publish event for spend aggregation
         eventPublisher.publishEvent(new PaymentCompletedEvent(
-                transaction.getClientId(), transaction.getAmount()));
+                this, transaction.getClientId(), transaction.getAmount()));
 
         log.info("Payment {} processed successfully for invoice {}", transaction.getId(), transaction.getInvoiceId());
         return transaction;
