@@ -53,7 +53,13 @@ if %ERRORLEVEL% neq 0 (
 echo ✅ MySQL is ready.
 
 REM Wait for Redis
+set RETRY_COUNT=0
 :wait_redis
+set /a RETRY_COUNT+=1
+if %RETRY_COUNT% gtr 30 (
+    echo ❌ Redis failed to start within timeout. Check Docker logs.
+    exit /b 1
+)
 docker exec shutterflow-redis redis-cli ping >nul 2>&1
 if %ERRORLEVEL% neq 0 (
     timeout /t 1 /nobreak >nul

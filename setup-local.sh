@@ -37,13 +37,25 @@ done
 echo "✅ MySQL is ready."
 
 # Wait for Redis
+RETRY_COUNT=0
 until docker exec shutterflow-redis redis-cli ping 2>/dev/null | grep -q PONG; do
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo "❌ Redis failed to start within timeout. Check Docker logs."
+        exit 1
+    fi
     sleep 1
 done
 echo "✅ Redis is ready."
 
 # Wait for LocalStack
+RETRY_COUNT=0
 until curl -sf http://localhost:4566/_localstack/health >/dev/null 2>&1; do
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo "❌ LocalStack failed to start within timeout. Check Docker logs."
+        exit 1
+    fi
     sleep 1
 done
 echo "✅ LocalStack is ready."
@@ -69,7 +81,10 @@ cd ..
 # Step 4: Install Frontend Dependencies
 echo "🎨 [4/5] Installing Frontend npm dependencies..."
 cd frontend
-npm install --silent 2>/dev/null || npm install
+if ! npm install --silent 2>/dev/null; then
+    echo "   Retrying npm install without --silent..."
+    npm install
+fi
 echo "✅ Frontend dependencies installed."
 echo ""
 cd ..
