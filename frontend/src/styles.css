@@ -1,5 +1,5 @@
 /* styles.css - ShutterFlow Premium Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+/* Fonts loaded via index.html link tag to avoid build-time fetch */
 
 :root {
   /* Dynamic harmonious colors */
